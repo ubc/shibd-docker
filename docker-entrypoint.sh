@@ -4,8 +4,8 @@ set -e
 envsubst < /etc/shibboleth/shibboleth2.xml-template > /etc/shibboleth/shibboleth2.xml
 chmod 644 /etc/shibboleth/shibboleth2.xml
 
-mkdir -p cert
-chown shibd:shibd cert
+mkdir -p /etc/shibboleth/cert
+chown shibd:shibd /etc/shibboleth/cert
 
 # generate sp key and cert if they don't exists
 if [ ! -f /etc/shibboleth/cert/sp-key.pem ]; then
