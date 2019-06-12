@@ -5,7 +5,8 @@ envsubst < /etc/shibboleth/shibboleth2.xml-template > /etc/shibboleth/shibboleth
 chmod 644 /etc/shibboleth/shibboleth2.xml
 
 mkdir -p /etc/shibboleth/cert
-chown shibd:shibd /etc/shibboleth/cert
+# gracefully run the command as it will fail when the cert directory is mounted
+chown shibd:shibd /etc/shibboleth/cert || true
 
 # generate sp key and cert if they don't exists
 if [ ! -f /etc/shibboleth/cert/sp-key.pem ]; then
