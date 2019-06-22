@@ -4,6 +4,8 @@ LABEL maintainer="pan.luo@ubc.ca"
 
 # https://wiki.shibboleth.net/confluence/display/SP3/LinuxRH6
 ENV LD_LIBRARY_PATH=/opt/shibboleth/lib64:$LD_LIBRARY_PATH
+# Shibd log level
+ENV LOG_LEVEL=INFO
 
 WORKDIR /etc/shibboleth
 
@@ -13,6 +15,7 @@ RUN curl -Ls http://download.opensuse.org/repositories/security://shibboleth/Cen
     && yum -y clean all
 
 COPY shibboleth2.xml-template /etc/shibboleth/
+COPY console.logger-template /etc/shibboleth/
 COPY docker-entrypoint.sh /
 
 EXPOSE 1600

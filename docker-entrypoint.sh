@@ -2,6 +2,7 @@
 set -e
 
 envsubst < /etc/shibboleth/shibboleth2.xml-template > /etc/shibboleth/shibboleth2.xml
+envsubst < /etc/shibboleth/console.logger-template > /etc/shibboleth/console.logger
 chmod 644 /etc/shibboleth/shibboleth2.xml
 
 mkdir -p /etc/shibboleth/cert
