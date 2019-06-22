@@ -6,12 +6,13 @@ LABEL maintainer="pan.luo@ubc.ca"
 ENV LD_LIBRARY_PATH=/opt/shibboleth/lib64:$LD_LIBRARY_PATH
 # Shibd log level
 ENV LOG_LEVEL=INFO
+ENV SHIBD_VERSION=3.0.4-3.2
 
 WORKDIR /etc/shibboleth
 
 RUN curl -Ls http://download.opensuse.org/repositories/security://shibboleth/CentOS_7/security:shibboleth.repo  --output /etc/yum.repos.d/security:shibboleth.repo \
     && yum -y update \
-    && yum -y install shibboleth-3.0.3-1.1 mysql-connector-odbc gettext mysql nc \
+    && yum -y install shibboleth-${SHIBD_VERSION} mysql-connector-odbc gettext mysql nc \
     && yum -y clean all
 
 COPY shibboleth2.xml-template /etc/shibboleth/
