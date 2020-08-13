@@ -11,7 +11,13 @@ chown shibd:shibd /etc/shibboleth/cert || true
 
 # generate sp key and cert if they don't exists
 if [ ! -f /etc/shibboleth/cert/sp-key.pem ]; then
-  /etc/shibboleth/keygen.sh -f -u shibd -h $SHIBBOLETH_SP_ENTITY_ID -y 10 -e $SHIBBOLETH_SP_ENTITY_ID -o /etc/shibboleth/cert
+  if [ -n "$SHIB_SP_CERT" ] && [ -n "$SHIB_SP_KEY" ]; then
+      echo $SHIB_SP_CERT > /etc/shibboleth/cert/sp-cert.pem
+      echo $SHIB_SP_KEY > /etc/shibboleth/cert/sp-key.pem
+  else
+    echo "Generating new sp key and cert..."
+    /etc/shibboleth/keygen.sh -f -u shibd -h $SHIBBOLETH_SP_ENTITY_ID -y 10 -e $SHIBBOLETH_SP_ENTITY_ID -o /etc/shibboleth/cert
+  fi
 fi
 
 # Wait for the DB to come up
