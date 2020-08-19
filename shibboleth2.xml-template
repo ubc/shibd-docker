@@ -67,7 +67,7 @@
          <TrustEngine type="PKIX"/>
       </TrustEngine>
 
-      <AttributeExtractor type="XML" validate="true" reloadChanges="false" url="${SHIBD_ATTRIBUTE_MAP_URL}" backingFilePath="attribute-map.xml"/>
+      ##ATTRIBUTE_EXTRACTOR##
 
       <AttributeFilter type="XML" validate="true" path="attribute-policy.xml"/>
 

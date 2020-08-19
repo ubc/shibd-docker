@@ -1,0 +1,39 @@
+version: '3'
+services:
+  db:
+    image: mariadb:10.4
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=moodle
+      - MYSQL_USER=moodle
+      - MYSQL_PASSWORD=password
+    volumes:
+      - ./.data/db:/var/lib/mysql
+    ports:
+      - 3306:3306
+  shibd:
+    image: lthub/shibd
+    build:
+      dockerfile: Dockerfile-debug
+      context: .
+    environment:
+      - SHIBBOLETH_IDP_DISCOVERY_URL=https://authentication.stg.id.ubc.ca
+      - SHIBBOLETH_IDP_METADATA_URL=https://authentication.stg.id.ubc.ca/idp/shibboleth
+      - SHIBBOLETH_IDP_ENTITY_ID=https://authentication.stg.id.ubc.ca
+      - SHIBBOLETH_SP_ENTITY_ID=https://moodle.ubc.ca
+      - SHIBD_LISTENER_ACL=0.0.0.0/0
+      - SHIBD_LISTENER_ADDRESS=0.0.0.0
+      - SHIBD_ODBC_DRIVER=MySql
+      - SHIBD_ODBC_LIB=odbc-store.so
+      - SHIBD_ODBC_SERVER=db
+      - SHIBD_ODBC_PORT=3306
+      - SHIBD_ODBC_DATABASE=moodle
+      - SHIB_ODBC_USER=moodle
+      - SHIB_ODBC_PASSWORD=password
+      - SHIBD_ATTRIBUTE_MAP_URL=https://sp1.shib3.id.ubc.ca/attribute-map.xml
+      - SSH_ENABLED=true
+      - SSH_PUBLIC_KEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAuGXfOtnIqgJhKK1zXi18U10mlwnkILfqXdG+l7sculwJd4ZApO6nd1xBcJtpaLpQ5ovogItsQ8ExGPxehzVTXxTyeZMNlrrk7KWsMpyBjvay2C69W+E3TI35X8dLjksXCs1YSdoyzo1dfAXQ1k9/tQ0CzzeNXaohz/47UVYbJVitW+1QA6D27+mDPEOKWwhR4zfwdsNRRgZA6eO4iEiRwxgIH3KE8xw+UcbdvS13HJRwKQesIeN1TdJyPJLwonX44GSS0KbRboyNcr+e9pxDZJjBC07gqZb3GtdsQ9ocV0dWxSwopeMZyIjteyTw90BJM1DHlaMlFAbmrG1vigtJVw== compass@darkstar
+    volumes:
+      - ./.data/cert:/etc/shibboleth/cert:rw
+    ports:
+      - "2222:22"
