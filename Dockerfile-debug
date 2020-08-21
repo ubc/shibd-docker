@@ -8,20 +8,29 @@ ENV LD_LIBRARY_PATH=/opt/shibboleth/lib64:$LD_LIBRARY_PATH
 ENV LOG_LEVEL=INFO
 ENV SHIBD_VERSION=3.0.4-3.2
 ENV SSH_ENABLED true
+ENV S6_CMD_ARG0 /docker-entrypoint.sh
 
 WORKDIR /etc/shibboleth
 
 RUN curl -Ls http://download.opensuse.org/repositories/security://shibboleth/CentOS_7/security:shibboleth.repo  --output /etc/yum.repos.d/security:shibboleth.repo \
     && yum -y update \
     && yum -y install shibboleth-${SHIBD_VERSION} mysql-connector-odbc gettext mysql nc openssh-server \
-    && yum -y clean all
+    && yum -y clean all \
+    && mkdir -p /etc/services.d/shibd
 
 COPY shibboleth2.xml-template /etc/shibboleth/
 COPY console.logger-template /etc/shibboleth/
 COPY docker-entrypoint.sh /
+COPY shibd.run /etc/services.d/shibd/run
+
+# Install S6-overlay
+ADD https://github.com/just-containers/s6-overlay/releases/download/v2.0.0.1/s6-overlay-amd64.tar.gz /tmp/
+RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" && \
+    tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin
 
 EXPOSE 1600
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/init"]
 
-CMD ["shibd", "-F", "-u", "shibd"]
+#CMD ["shibd", "-F", "-u", "shibd"]
+CMD ["sleep", "infinity"]
