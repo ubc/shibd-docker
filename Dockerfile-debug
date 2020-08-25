@@ -19,6 +19,7 @@ RUN curl -Ls http://download.opensuse.org/repositories/security://shibboleth/Cen
 COPY shibboleth2.xml-template /etc/shibboleth/
 COPY console.logger-template /etc/shibboleth/
 COPY docker-entrypoint.sh /
+COPY attribute-map.xml /etc/shibboleth/
 
 EXPOSE 1600
 
