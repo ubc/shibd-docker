@@ -19,6 +19,7 @@ if [ ! -f /etc/shibboleth/cert/sp-key.pem ]; then
   if [ -n "$SHIB_SP_CERT" ] && [ -n "$SHIB_SP_KEY" ]; then
       echo -e $SHIB_SP_CERT > /etc/shibboleth/cert/sp-cert.pem
       echo -e $SHIB_SP_KEY > /etc/shibboleth/cert/sp-key.pem
+      chown -R shibd:shibd /etc/shibboleth/cert
   else
     echo "Generating new sp key and cert..."
     /etc/shibboleth/keygen.sh -f -u shibd -h $SHIBBOLETH_SP_ENTITY_ID -y 10 -e $SHIBBOLETH_SP_ENTITY_ID -o /etc/shibboleth/cert
