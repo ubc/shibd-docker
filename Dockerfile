@@ -6,7 +6,7 @@ LABEL maintainer="pan.luo@ubc.ca"
 ENV LD_LIBRARY_PATH=/opt/shibboleth/lib64:$LD_LIBRARY_PATH
 # Shibd log level
 ENV LOG_LEVEL=INFO
-ENV SHIBD_VERSION=3.0.4-3.2
+ENV SHIBD_VERSION=3.1.0-3.1
 ENV SHIBD_REMOTE_USER=somerandomname
 
 WORKDIR /etc/shibboleth
