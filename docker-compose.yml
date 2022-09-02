@@ -31,6 +31,7 @@ services:
       - SHIB_ODBC_USER=moodle
       - SHIB_ODBC_PASSWORD=password
         #- SHIBD_ATTRIBUTE_MAP_URL=https://sp1.shib3.id.ubc.ca/attribute-map.xml
+      - SHIBD_CONSISTENT_ADDRESS=true
       - SSH_ENABLED=true
       - SSH_PUBLIC_KEY=ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAuGXfOtnIqgJhKK1zXi18U10mlwnkILfqXdG+l7sculwJd4ZApO6nd1xBcJtpaLpQ5ovogItsQ8ExGPxehzVTXxTyeZMNlrrk7KWsMpyBjvay2C69W+E3TI35X8dLjksXCs1YSdoyzo1dfAXQ1k9/tQ0CzzeNXaohz/47UVYbJVitW+1QA6D27+mDPEOKWwhR4zfwdsNRRgZA6eO4iEiRwxgIH3KE8xw+UcbdvS13HJRwKQesIeN1TdJyPJLwonX44GSS0KbRboyNcr+e9pxDZJjBC07gqZb3GtdsQ9ocV0dWxSwopeMZyIjteyTw90BJM1DHlaMlFAbmrG1vigtJVw== compass@darkstar
     volumes:
