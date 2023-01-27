@@ -9,6 +9,7 @@ ENV LOG_LEVEL=INFO
 ENV SHIBD_VERSION=3.2.1-3.1
 ENV SHIBD_REMOTE_USER=somerandomname
 ENV SHIBD_CONSISTENT_ADDRESS=true
+ENV SHIBBOLETH_IDP_METADATA_BACKUPFILE=/var/cache/shibboleth/shibboleth-metadata-idp.xml
 
 WORKDIR /etc/shibboleth
 
