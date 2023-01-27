@@ -59,7 +59,7 @@
 
       <MetadataProvider type="XML"
          url="${SHIBBOLETH_IDP_METADATA_URL}"
-         backingFilePath="/etc/shibboleth/shibboleth-metadata-idp.xml"
+         backingFilePath="${SHIBBOLETH_IDP_METADATA_BACKUPFILE}"
          reloadInterval="86400" />
 
       <TrustEngine type="Chaining">

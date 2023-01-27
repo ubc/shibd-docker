@@ -19,6 +19,7 @@ services:
     environment:
       - SHIBBOLETH_IDP_DISCOVERY_URL=https://authentication.stg.id.ubc.ca
       - SHIBBOLETH_IDP_METADATA_URL=https://authentication.stg.id.ubc.ca/idp/shibboleth
+      - SHIBBOLETH_IDP_METADATA_BACKUPFILE=/tmp/shibboleth-metadata-idp.xml
       - SHIBBOLETH_IDP_ENTITY_ID=https://authentication.stg.id.ubc.ca
       - SHIBBOLETH_SP_ENTITY_ID=https://moodle.ubc.ca
       - SHIBD_LISTENER_ACL=0.0.0.0/0
