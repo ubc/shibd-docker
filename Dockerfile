@@ -12,8 +12,9 @@ ENV SHIBD_CONSISTENT_ADDRESS=true
 
 WORKDIR /etc/shibboleth
 
-RUN curl -Ls http://download.opensuse.org/repositories/security://shibboleth/CentOS_7/security:shibboleth.repo  --output /etc/yum.repos.d/security:shibboleth.repo \
-    && yum -y update \
+COPY shibboleth.repo /etc/yum.repos.d/
+
+RUN yum -y update \
     && yum -y install shibboleth-${SHIBD_VERSION} mysql-connector-odbc gettext mysql nc \
     && yum -y clean all
 
