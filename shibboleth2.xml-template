@@ -19,7 +19,7 @@
       </ConnectionString>
    </StorageService>
 
-   <SessionCache type="StorageService" StorageService="db" cacheAllowance="3600" inprocTimeout="900" cleanupInterval="900"/>
+   <SessionCache type="StorageService" StorageService="db" cacheAllowance="3600" cacheTimeout="${SHIBBOLETH_CACHE_TIMEOUT}" inprocTimeout="900" cleanupInterval="900"/>
 
    <ReplayCache StorageService="db"/>
 
@@ -29,7 +29,7 @@
       signing="true" encryption="false"
       REMOTE_USER="${SHIBD_REMOTE_USER}">
 
-      <Sessions lifetime="7200" timeout="3600" relayState="ss:db"
+      <Sessions lifetime="${SHIBBOLETH_SESSION_LIFETIME}" timeout="${SHIBBOLETH_SESSION_TIMEOUT}" relayState="ss:db"
          idpHistory="true" idpHistoryDays="7"
          checkAddress="false" handlerSSL="false" cookieProps="http" consistentAddress="${SHIBD_CONSISTENT_ADDRESS}">
 
