@@ -22,6 +22,7 @@ RUN yum -y update \
     && dnf install -y 'dnf-command(config-manager)' \
     && dnf config-manager --set-enabled crb \
     && yum -y install shibboleth-${SHIBD_VERSION} mariadb-connector-odbc gettext mysql nc \
+    && ln -s /usr/lib64/libmaodbc.so /usr/lib64/libmyodbc8.so \
     && yum -y clean all
 
 COPY shibboleth2.xml-template /etc/shibboleth/
