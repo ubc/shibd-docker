@@ -5,31 +5,23 @@
                   xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
                   clockSkew="180">
 
-   <OutOfProcess logger="console.logger" tranLogFormat="%u|%s|%IDP|%i|%ac|%t|%attr|%n|%b|%E|%S|%SS|%L|%UA|%a">
-      <Extensions>
-         <Library path="${SHIBD_ODBC_LIB}" fatal="true"/>
-      </Extensions>
-   </OutOfProcess>
+   <OutOfProcess logger="console.logger" tranLogFormat="%u|%s|%IDP|%i|%ac|%t|%attr|%n|%b|%E|%S|%SS|%L|%UA|%a"/>
 
    <TCPListener address="${SHIBD_LISTENER_ADDRESS}" port="1600" acl="${SHIBD_LISTENER_ACL}"/>
 
-   <StorageService type="ODBC" id="db" cleanupInterval="900">
-      <ConnectionString>
-         DRIVER=${SHIBD_ODBC_DRIVER};SERVER=${SHIBD_ODBC_SERVER};PORT=${SHIBD_ODBC_PORT};DATABASE=${SHIBD_ODBC_DATABASE};USER=${SHIB_ODBC_USER};PASSWORD=${SHIB_ODBC_PASSWORD}
-      </ConnectionString>
-   </StorageService>
+   <StorageService type="Memory" id="mem" cleanupInterval="900"/>
 
-   <SessionCache type="StorageService" StorageService="db" cacheAllowance="3600" cacheTimeout="${SHIBBOLETH_CACHE_TIMEOUT}" inprocTimeout="900" cleanupInterval="900"/>
+   <SessionCache type="StorageService" StorageService="mem" cacheAssertions="false" cacheAllowance="3600" cacheTimeout="${SHIBBOLETH_CACHE_TIMEOUT}" inprocTimeout="900" cleanupInterval="900"/>
 
-   <ReplayCache StorageService="db"/>
+   <ReplayCache StorageService="mem"/>
 
-   <ArtifactMap StorageService="db" artifactTTL="180"/>
+   <ArtifactMap StorageService="mem" artifactTTL="180"/>
 
    <ApplicationDefaults entityID="${SHIBBOLETH_SP_ENTITY_ID}"
       signing="true" encryption="false"
       REMOTE_USER="${SHIBD_REMOTE_USER}">
 
-      <Sessions lifetime="${SHIBBOLETH_SESSION_LIFETIME}" timeout="${SHIBBOLETH_SESSION_TIMEOUT}" relayState="ss:db"
+      <Sessions lifetime="${SHIBBOLETH_SESSION_LIFETIME}" timeout="${SHIBBOLETH_SESSION_TIMEOUT}" relayState="ss:mem"
          idpHistory="true" idpHistoryDays="7"
          checkAddress="false" handlerSSL="false" cookieProps="http" consistentAddress="${SHIBD_CONSISTENT_ADDRESS}">
 
