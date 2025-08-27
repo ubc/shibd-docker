@@ -5,7 +5,7 @@ LABEL maintainer="pan.luo@ubc.ca"
 # https://wiki.shibboleth.net/confluence/display/SP3/LinuxRH6
 ENV LD_LIBRARY_PATH=/opt/shibboleth/lib64:$LD_LIBRARY_PATH
 # Shibd log level
-ENV LOG_LEVEL=INFO
+ENV LOG_LEVEL=DEBUG
 ENV SHIBD_VERSION=3.5.0-1.el9
 ENV SHIBD_REMOTE_USER=somerandomname
 ENV SHIBD_CONSISTENT_ADDRESS=true
@@ -21,8 +21,7 @@ COPY shibboleth.repo /etc/yum.repos.d/
 RUN yum -y update \
     && dnf install -y 'dnf-command(config-manager)' \
     && dnf config-manager --set-enabled crb \
-    && yum -y install shibboleth-${SHIBD_VERSION} mariadb-connector-odbc gettext mysql nc \
-    && ln -s /usr/lib64/libmaodbc.so /usr/lib64/libmyodbc8.so \
+    && yum -y install shibboleth-${SHIBD_VERSION} gettext nc openssh-server openssh-clients openssl \
     && yum -y clean all
 
 COPY shibboleth2.xml-template /etc/shibboleth/
