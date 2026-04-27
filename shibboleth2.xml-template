@@ -31,7 +31,7 @@
 
       <Sessions lifetime="${SHIBBOLETH_SESSION_LIFETIME}" timeout="${SHIBBOLETH_SESSION_TIMEOUT}" relayState="ss:db"
          idpHistory="true" idpHistoryDays="7"
-         checkAddress="false" handlerSSL="false" cookieProps="http" consistentAddress="${SHIBD_CONSISTENT_ADDRESS}">
+         checkAddress="false" handlerSSL="false" cookieProps="${SHIBBOLETH_COOKIE_PROPS}" consistentAddress="${SHIBD_CONSISTENT_ADDRESS}">
 
          <SSO entityID="${SHIBBOLETH_IDP_ENTITY_ID}" discoveryProtocol="SAMLDS"
              discoveryURL="${SHIBBOLETH_IDP_DISCOVERY_URL}" >
