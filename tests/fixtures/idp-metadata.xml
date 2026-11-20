@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Test-only IdP metadata. The certificate is self-signed and its private key
+     was thrown away, so nothing can be signed with it. -->
+<EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
+                  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+                  entityID="https://idp.example.test">
+  <IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+    <KeyDescriptor use="signing">
+      <ds:KeyInfo>
+        <ds:X509Data>
+          <ds:X509Certificate>
+          MIIDGTCCAgGgAwIBAgIUFooYndbO7u2UJCBeRrHjgGOXeogwDQYJKoZIhvcNAQEL
+          BQAwGzEZMBcGA1UEAwwQaWRwLmV4YW1wbGUudGVzdDAgFw0yNjExMTkwODI1MjNa
+          GA8yMTI2MTAyNjA4MjUyM1owGzEZMBcGA1UEAwwQaWRwLmV4YW1wbGUudGVzdDCC
+          ASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKB8uH3kSQj2E6maxDbYEvR3
+          OHjioqz3m7ZeMUBylSVY6aMOYn62PaieMG3yCsTdFaR5iZHB0XmlPbyaTFI6pWds
+          MutgDOYZxNevhUOWIzBGbPwILjf5zFfmexd0MJeg99R/96P1WT8wE+SX3RLYNl1/
+          S39a4T+9ijzvvEaqQyvMaVxv5JAxqr5vI0fRAxzcGnxSTWuN1pJmg/Vb3D7cBS6G
+          XXZKxcW3w15olUB28uxbKNkKbDmVX+Tkpz8hrPs0yOofTbMKToPVqmtLyuQs66Gn
+          OIMvKuW+IS+wg42R/UXuqdP9EF9wVLH+jW/yUCGrGCxIFLHngMjOX5ifrNdjk0sC
+          AwEAAaNTMFEwHQYDVR0OBBYEFCYfP7C+Gt/MT8ooI7t7saAbuiGOMB8GA1UdIwQY
+          MBaAFCYfP7C+Gt/MT8ooI7t7saAbuiGOMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZI
+          hvcNAQELBQADggEBAG3G8jmqCak199k5SWbY4A/TGI/9kPqwt7KLKX02M97yT3Bv
+          u4f8AQWw1o1o9s2X5JuHHFk1qha0cDS5MoBxJWXz3KadgJibTms1FE1DEJd95e8u
+          qiZsCkvlizQgPwu2UV0lUl7IpdlBDHxECHLG/shWSUgli3D7+iOzbpmNCK3rwwtJ
+          R8C9lDiW6kxaWw4ggqT6MhQ2QcJQmEu4GqnbZlgl1QpCE2YSzaoWBJDWililsyv2
+          3xOWLnbFLZgu582OuO3AhcCS2fMjF1P7T5vYmu+OSGg9y+cmfQ00OrpgLx6AaVJN
+          9aBQZlJC8ibLy6O17O1hoGP+L18nfzEr9ddm88Y=
+          </ds:X509Certificate>
+        </ds:X509Data>
+      </ds:KeyInfo>
+    </KeyDescriptor>
+    <NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</NameIDFormat>
+    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+                         Location="https://idp.example.test/idp/profile/SAML2/Redirect/SSO"/>
+  </IDPSSODescriptor>
+</EntityDescriptor>

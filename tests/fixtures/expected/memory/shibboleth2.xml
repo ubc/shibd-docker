@@ -1,0 +1,92 @@
+<SPConfig xmlns="urn:mace:shibboleth:3.0:native:sp:config"
+                  xmlns:conf="urn:mace:shibboleth:3.0:native:sp:config"
+                  xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+                  xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+                  xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+                  clockSkew="180">
+
+   <!-- Login events without the user (%u, %n), the session ID (%s, the cookie value),
+        the user agent or the address (%UA, %a). console.logger also keeps the
+        Shibboleth.SessionCache category at WARN: at INFO it logs every session ID and
+        client address. Together: no CWLs, session tokens or IPs in shibd's log at INFO. -->
+   <OutOfProcess logger="console.logger" tranLogFormat="%IDP|%i|%ac|%t|%attr|%b|%E|%S|%SS|%L">
+   </OutOfProcess>
+
+   <TCPListener address="127.0.0.1" port="1600" acl="127.0.0.1"/>
+
+   <StorageService type="Memory" id="mem" cleanupInterval="900"/>
+
+   <!-- No deprecated cacheTimeout: sessions stay in storage for the idle timeout plus
+        cacheAllowance. Keep its attributes the same as the web container's. -->
+   <SessionCache type="StorageService" StorageService="mem" cacheAllowance="3600" inprocTimeout="900" cleanupInterval="900"/>
+
+   <ReplayCache StorageService="mem"/>
+
+   <ArtifactMap StorageService="mem" artifactTTL="180"/>
+
+   <!-- homeURL: where a login lands when its target is lost (a login that took longer than
+        relay state lives, or crossed a restart). Keep it the same as the web container's. -->
+   <ApplicationDefaults entityID="https://pages.ltic.ubc.ca/shibboleth"
+      signing="true" encryption="false"
+      REMOTE_USER="uid"
+      homeURL="/signed-in">
+
+      <!-- redirectLimit: Login, Logout and the ACS only redirect back to this host (no open
+           redirect). Keep this element identical to the web container's. -->
+      <Sessions lifetime="7200" timeout="3600" relayState="ss:mem"
+         idpHistory="true" idpHistoryDays="7"
+         checkAddress="false" handlerSSL="true" cookieProps="https" consistentAddress="true"
+         redirectLimit="exact">
+
+         <SSO entityID="https://authentication.stg.id.ubc.ca" discoveryProtocol="SAMLDS"
+             discoveryURL="https://authentication.stg.id.ubc.ca" >
+             SAML2 SAML1
+         </SSO>
+
+      <!-- Local logout only: no SAML2 single logout with the IdP, so no SLO endpoints. -->
+      <Logout>Local</Logout>
+
+      <LogoutInitiator type="Admin" Location="/Logout/Admin" acl="127.0.0.1" />
+
+      <!-- No trailing space: mod_shib addresses this handler by its exact Location. -->
+      <LogoutInitiator type="Local" Location="/Logout/Redirect" />
+
+      <Handler type="MetadataGenerator" Location="/Metadata" signing="false"/>
+
+      <Handler type="Status" Location="/Status" acl="127.0.0.1"/>
+
+      <Handler type="Session" Location="/Session" showAttributeValues="false"/>
+
+      <Handler type="DiscoveryFeed" Location="/DiscoFeed"/>
+
+      </Sessions>
+
+      <Errors supportContact="Learning Technology (LT) Hub"
+          supportEmail="lt.hub@ubc.ca"/>
+
+      <!-- Re-read when the file changes. Only the configured IdP is kept: any other entity
+           in the file is dropped, so it can't log anyone in. -->
+      <MetadataProvider type="XML" validate="true" path="/etc/shibboleth/idp/idp-metadata.xml">
+         <MetadataFilter type="Include">
+            <Include>https://authentication.stg.id.ubc.ca</Include>
+         </MetadataFilter>
+      </MetadataProvider>
+
+      <TrustEngine type="Chaining">
+         <TrustEngine type="ExplicitKey"/>
+         <TrustEngine type="PKIX"/>
+      </TrustEngine>
+
+      <AttributeExtractor type="XML" validate="true" reloadChanges="false" path="attribute-map.xml"/>
+
+      <AttributeFilter type="XML" validate="true" path="attribute-policy.xml"/>
+
+      <CredentialResolver type="File" key="cert/sp-key.pem" certificate="cert/sp-cert.pem"/>
+
+   </ApplicationDefaults>
+
+   <SecurityPolicyProvider type="XML" validate="true" path="security-policy.xml"/>
+
+   <ProtocolProvider type="XML" validate="true" reloadChanges="false" path="protocols.xml"/>
+
+</SPConfig>
