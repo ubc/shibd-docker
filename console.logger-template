@@ -24,6 +24,15 @@ log4j.category.XMLTooling.libcurl=INFO
 # persistent storage and caching
 #log4j.category.XMLTooling.StorageService=DEBUG
 
+##IF_MEMORY### Login events go to the console with everything else. Without this they stay in
+##IF_MEMORY### /var/log/shibboleth/transaction.log inside the container, where the stock
+##IF_MEMORY### shibd.logger (read before this file) sends them.
+##IF_MEMORY##log4j.category.Shibboleth-TRANSACTION=INFO, console
+##IF_MEMORY##log4j.additivity.Shibboleth-TRANSACTION=false
+##IF_MEMORY### At INFO the session cache logs every session ID, which is the session cookie's
+##IF_MEMORY### value, with the client address ("new session created", "removed session").
+##IF_MEMORY##log4j.category.Shibboleth.SessionCache=WARN
+##IF_MEMORY##
 # define the appender
 
 log4j.appender.console=org.apache.log4j.ConsoleAppender

@@ -5,44 +5,65 @@
                   xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
                   clockSkew="180">
 
-   <OutOfProcess logger="console.logger" tranLogFormat="%u|%s|%IDP|%i|%ac|%t|%attr|%n|%b|%E|%S|%SS|%L|%UA|%a">
-      <Extensions>
-         <Library path="${SHIBD_ODBC_LIB}" fatal="true"/>
-      </Extensions>
+##IF_ODBC##   <OutOfProcess logger="console.logger" tranLogFormat="%u|%s|%IDP|%i|%ac|%t|%attr|%n|%b|%E|%S|%SS|%L|%UA|%a">
+##IF_MEMORY##   <!-- Login events without the user (%u, %n), the session ID (%s, the cookie value),
+##IF_MEMORY##        the user agent or the address (%UA, %a). console.logger also keeps the
+##IF_MEMORY##        Shibboleth.SessionCache category at WARN: at INFO it logs every session ID and
+##IF_MEMORY##        client address. Together: no CWLs, session tokens or IPs in shibd's log at INFO. -->
+##IF_MEMORY##   <OutOfProcess logger="console.logger" tranLogFormat="%IDP|%i|%ac|%t|%attr|%b|%E|%S|%SS|%L">
+##IF_ODBC##      <Extensions>
+##IF_ODBC##         <Library path="${SHIBD_ODBC_LIB}" fatal="true"/>
+##IF_ODBC##      </Extensions>
    </OutOfProcess>
 
    <TCPListener address="${SHIBD_LISTENER_ADDRESS}" port="1600" acl="${SHIBD_LISTENER_ACL}"/>
 
-   <StorageService type="ODBC" id="db" cleanupInterval="900">
-      <ConnectionString>
-         DRIVER=${SHIBD_ODBC_DRIVER};SERVER=${SHIBD_ODBC_SERVER};PORT=${SHIBD_ODBC_PORT};DATABASE=${SHIBD_ODBC_DATABASE};USER=${SHIB_ODBC_USER};PASSWORD=${SHIB_ODBC_PASSWORD}
-      </ConnectionString>
-   </StorageService>
+##IF_ODBC##   <StorageService type="ODBC" id="db" cleanupInterval="900">
+##IF_ODBC##      <ConnectionString>
+##IF_ODBC##         DRIVER=${SHIBD_ODBC_DRIVER};SERVER=${SHIBD_ODBC_SERVER};PORT=${SHIBD_ODBC_PORT};DATABASE=${SHIBD_ODBC_DATABASE};USER=${SHIB_ODBC_USER};PASSWORD=${SHIB_ODBC_PASSWORD}
+##IF_ODBC##      </ConnectionString>
+##IF_ODBC##   </StorageService>
+##IF_MEMORY##   <StorageService type="Memory" id="mem" cleanupInterval="900"/>
 
-   <SessionCache type="StorageService" StorageService="db" cacheAllowance="3600" cacheTimeout="${SHIBBOLETH_CACHE_TIMEOUT}" inprocTimeout="900" cleanupInterval="900"/>
+##IF_ODBC##   <SessionCache type="StorageService" StorageService="db" cacheAllowance="3600" cacheTimeout="${SHIBBOLETH_CACHE_TIMEOUT}" inprocTimeout="900" cleanupInterval="900"/>
+##IF_MEMORY##   <!-- No deprecated cacheTimeout: sessions stay in storage for the idle timeout plus
+##IF_MEMORY##        cacheAllowance. Keep its attributes the same as the web container's. -->
+##IF_MEMORY##   <SessionCache type="StorageService" StorageService="mem" cacheAllowance="3600" inprocTimeout="900" cleanupInterval="900"/>
 
-   <ReplayCache StorageService="db"/>
+   <ReplayCache StorageService="##STORAGE_ID##"/>
 
-   <ArtifactMap StorageService="db" artifactTTL="180"/>
+   <ArtifactMap StorageService="##STORAGE_ID##" artifactTTL="180"/>
 
+##IF_MEMORY##   <!-- homeURL: where a login lands when its target is lost (a login that took longer than
+##IF_MEMORY##        relay state lives, or crossed a restart). Keep it the same as the web container's. -->
    <ApplicationDefaults entityID="${SHIBBOLETH_SP_ENTITY_ID}"
       signing="true" encryption="false"
-      REMOTE_USER="${SHIBD_REMOTE_USER}">
+##IF_ODBC##      REMOTE_USER="${SHIBD_REMOTE_USER}">
+##IF_MEMORY##      REMOTE_USER="${SHIBD_REMOTE_USER}"
+##IF_MEMORY##      homeURL="${SHIBBOLETH_HOME_URL}">
 
-      <Sessions lifetime="${SHIBBOLETH_SESSION_LIFETIME}" timeout="${SHIBBOLETH_SESSION_TIMEOUT}" relayState="ss:db"
+##IF_MEMORY##      <!-- redirectLimit: Login, Logout and the ACS only redirect back to this host (no open
+##IF_MEMORY##           redirect). Keep this element identical to the web container's. -->
+      <Sessions lifetime="${SHIBBOLETH_SESSION_LIFETIME}" timeout="${SHIBBOLETH_SESSION_TIMEOUT}" relayState="ss:##STORAGE_ID##"
          idpHistory="true" idpHistoryDays="7"
-         checkAddress="false" handlerSSL="false" cookieProps="${SHIBBOLETH_COOKIE_PROPS}" consistentAddress="${SHIBD_CONSISTENT_ADDRESS}">
+##IF_ODBC##         checkAddress="false" handlerSSL="${SHIBBOLETH_HANDLER_SSL}" cookieProps="${SHIBBOLETH_COOKIE_PROPS}" consistentAddress="${SHIBD_CONSISTENT_ADDRESS}">
+##IF_MEMORY##         checkAddress="false" handlerSSL="${SHIBBOLETH_HANDLER_SSL}" cookieProps="${SHIBBOLETH_COOKIE_PROPS}" consistentAddress="${SHIBD_CONSISTENT_ADDRESS}"
+##IF_MEMORY##         redirectLimit="exact">
 
          <SSO entityID="${SHIBBOLETH_IDP_ENTITY_ID}" discoveryProtocol="SAMLDS"
              discoveryURL="${SHIBBOLETH_IDP_DISCOVERY_URL}" >
              SAML2 SAML1
          </SSO>
 
-      <Logout>SAML2 Local</Logout>
+##IF_ODBC##      <Logout>SAML2 Local</Logout>
+##IF_MEMORY##      <!-- Local logout only: no SAML2 single logout with the IdP, so no SLO endpoints. -->
+##IF_MEMORY##      <Logout>Local</Logout>
 
       <LogoutInitiator type="Admin" Location="/Logout/Admin" acl="127.0.0.1" />
 
-      <LogoutInitiator type="Local" Location="/Logout/Redirect " />
+##IF_ODBC##      <LogoutInitiator type="Local" Location="/Logout/Redirect " />
+##IF_MEMORY##      <!-- No trailing space: mod_shib addresses this handler by its exact Location. -->
+##IF_MEMORY##      <LogoutInitiator type="Local" Location="/Logout/Redirect" />
 
       <Handler type="MetadataGenerator" Location="/Metadata" signing="false"/>
 
@@ -57,10 +78,17 @@
       <Errors supportContact="Learning Technology (LT) Hub"
           supportEmail="lt.hub@ubc.ca"/>
 
-      <MetadataProvider type="XML"
-         url="${SHIBBOLETH_IDP_METADATA_URL}"
-         backingFilePath="${SHIBBOLETH_IDP_METADATA_BACKUPFILE}"
-         reloadInterval="86400" />
+##IF_METADATA_URL##      <MetadataProvider type="XML"
+##IF_METADATA_URL##         url="${SHIBBOLETH_IDP_METADATA_URL}"
+##IF_METADATA_URL##         backingFilePath="${SHIBBOLETH_IDP_METADATA_BACKUPFILE}"
+##IF_METADATA_URL##         reloadInterval="86400" />
+##IF_METADATA_FILE##      <!-- Re-read when the file changes. Only the configured IdP is kept: any other entity
+##IF_METADATA_FILE##           in the file is dropped, so it can't log anyone in. -->
+##IF_METADATA_FILE##      <MetadataProvider type="XML" validate="true" path="${SHIBBOLETH_IDP_METADATA_FILE}">
+##IF_METADATA_FILE##         <MetadataFilter type="Include">
+##IF_METADATA_FILE##            <Include>${SHIBBOLETH_IDP_ENTITY_ID}</Include>
+##IF_METADATA_FILE##         </MetadataFilter>
+##IF_METADATA_FILE##      </MetadataProvider>
 
       <TrustEngine type="Chaining">
          <TrustEngine type="ExplicitKey"/>

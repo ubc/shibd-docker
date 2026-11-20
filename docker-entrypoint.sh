@@ -1,18 +1,21 @@
 #!/bin/bash
 set -e
 
-if [ -z $SHIBD_ATTRIBUTE_MAP_URL ]; then
-    ATTRIBUTE_EXTRACTOR='<AttributeExtractor type="XML" validate="true" reloadChanges="false" path="attribute-map.xml"/>'
-else
-    ATTRIBUTE_EXTRACTOR="<AttributeExtractor type=\"XML\" validate=\"true\" reloadChanges=\"false\" url=\"${SHIBD_ATTRIBUTE_MAP_URL}\" backingFilePath=\"attribute-map.xml\"/>"
-fi
-envsubst < /etc/shibboleth/shibboleth2.xml-template > /etc/shibboleth/shibboleth2.xml
-envsubst < /etc/shibboleth/console.logger-template > /etc/shibboleth/console.logger
-sed -i "s|##ATTRIBUTE_EXTRACTOR##|$ATTRIBUTE_EXTRACTOR|" /etc/shibboleth/shibboleth2.xml
+# Also validates SHIBD_STORAGE and friends, so a typo stops the container here.
+/render-config.sh
 chmod 644 /etc/shibboleth/shibboleth2.xml
+# A metadata file shibd can't read, or without the configured IdP, would leave
+# shibd running with no IdP (a CRIT line, then every login fails): stop here,
+# with one line saying what is wrong.
+if [ -n "$SHIBBOLETH_IDP_METADATA_FILE" ]; then
+    /check-idp-metadata.sh "$@"
+fi
 mkdir -p /etc/shibboleth/cert
-# gracefully run the command as it will fail when the cert directory is mounted
-chown shibd:shibd /etc/shibboleth/cert || true
+# A read-only mount (a Kubernetes Secret, a :ro volume) can't be chowned; its
+# files must already be readable by shibd (e.g. fsGroup), so leave it alone.
+if [ -w /etc/shibboleth/cert ]; then
+    chown shibd:shibd /etc/shibboleth/cert || true
+fi
 
 # generate sp key and cert if they don't exists
 if [ ! -f /etc/shibboleth/cert/sp-key.pem ]; then
@@ -26,14 +29,16 @@ if [ ! -f /etc/shibboleth/cert/sp-key.pem ]; then
   fi
 fi
 
-# Wait for the DB to come up
-while [ `/bin/nc -w 1 $SHIBD_ODBC_SERVER $SHIBD_ODBC_PORT < /dev/null > /dev/null; echo $?` != 0 ]; do
-    echo "Waiting for database to come up at $SHIBD_ODBC_SERVER:$SHIBD_ODBC_PORT..."
-    sleep 1
-done
+# Memory storage keeps everything inside shibd: no database to wait for or set up.
+if [ "${SHIBD_STORAGE:-odbc}" = "odbc" ]; then
+    # Wait for the DB to come up
+    until /bin/nc -w 1 "$SHIBD_ODBC_SERVER" "$SHIBD_ODBC_PORT" < /dev/null > /dev/null; do
+        echo "Waiting for database to come up at $SHIBD_ODBC_SERVER:$SHIBD_ODBC_PORT..."
+        sleep 1
+    done
 
-# init necessary tables and data for shibd to work
-mysql -u $SHIB_ODBC_USER -p$SHIB_ODBC_PASSWORD -h $SHIBD_ODBC_SERVER -P $SHIBD_ODBC_PORT $SHIBD_ODBC_DATABASE << 'EOF'
+    # init necessary tables and data for shibd to work
+    mysql -u "$SHIB_ODBC_USER" -p"$SHIB_ODBC_PASSWORD" -h "$SHIBD_ODBC_SERVER" -P "$SHIBD_ODBC_PORT" "$SHIBD_ODBC_DATABASE" << 'EOF'
 CREATE TABLE IF NOT EXISTS version (
     major int NOT NULL,
     minor int NOT NULL,
@@ -57,6 +62,7 @@ CREATE TABLE IF NOT EXISTS texts (
     );
 INSERT IGNORE INTO version VALUES (1,0);
 EOF
+fi
 
 if [ "$SSH_ENABLED" = true ]; then
   if [ ! -f "/etc/ssh/ssh_host_rsa_key" ]; then
@@ -100,6 +106,13 @@ if [ "$SSH_ENABLED" = true ]; then
   env | grep '_\|PATH' | awk '{print "export " $0}' >> /root/.profile
 
   /sbin/sshd
+fi
+
+# shibd's console appender writes through C stdio, which is block-buffered on a
+# pipe: log lines would reach `docker logs`/`kubectl logs` only 4 KB at a time
+# (or at exit). Line-buffer stdout so each line shows up when it happens.
+if [ "${SHIBD_STORAGE:-odbc}" = "memory" ] && [ "$1" = "shibd" ]; then
+    exec stdbuf -oL "$@"
 fi
 
 exec "$@"
